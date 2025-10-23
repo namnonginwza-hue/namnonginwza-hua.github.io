@@ -13,6 +13,14 @@ export const registerUser = async (data) => {
     return response.data;
 }
 
+export const verifyToken = async (token) => {
+  const response = await api.get("/auth/verify-token", {
+    headers: { Authorization: `Bearer ${token}`},
+  });
+  return response.data;
+};
+
+
 export const getAllFriends = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token found");

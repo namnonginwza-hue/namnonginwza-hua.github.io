@@ -2,9 +2,9 @@
 import React from 'react'
 import { useParams,useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from "react";
-import { sendMessage } from '@/lib/api';
+import { sendMessage , getMessages } from '@/lib/api';
 
-function chatpage() {
+function ChatRoomPage() {
   const scrollRef = useRef(null);
   const { id: roomId } = useParams(); // ดึง roomId จาก URL
   const roomIdInt = parseInt(roomId, 10);
@@ -12,16 +12,49 @@ function chatpage() {
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(null)
   
+  useEffect(() => {
+    const uid = localStorage.getItem("userId");
+    if (uid) setCurrentUserId(parseInt(uid,10));
+  }, []);
 
- 
+  const fetchMessages = async () => {
+    try{
+      const data = await getMessages(roomIdInt);
+      setMessages(data);
+      scrollToBottom();
+    } catch (error) {
+          await Swal.fire({
+           title: 'Failed to find Friend',
+           text:   "cannot find friends",
+           icon: 'error',
+           confirmButtonText: 'OK',
+           confirmButtonColor: '#588bddff',
+         })
+       
+       }
+  }
+  useEffect(() => {
+    if (!roomIdInt) return;
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
+  }, [roomIdInt]);
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
     try {
       const msg = await sendMessage(roomIdInt, input.trim());
       setMessages((prev) => [...prev, msg]);
-     
+      setInput("");
+      scrollToBottom();
       console.log("Message sent:", msg);
     }catch(error){
       console.error("Error sending message:", error);
@@ -49,7 +82,7 @@ function chatpage() {
           <div className="w-16" /> {/* ช่องว่างให้กึ่งกลาง */}
         </div>
         {/* Messages */}
-        {/* <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
           {messages.map((msg) => {
             const isMe = msg.sender_id === currentUserId;
             return (
@@ -65,7 +98,7 @@ function chatpage() {
               </div>
             );
           })}
-        </div> */}
+        </div>
 
         {/* Input */}
         <div className="p-4 border-t border-blue-200 flex gap-2">
@@ -88,4 +121,4 @@ function chatpage() {
   )
 }
 
-export default chatpage
+export default ChatRoomPage

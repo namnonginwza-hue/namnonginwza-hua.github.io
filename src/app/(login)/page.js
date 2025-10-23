@@ -1,6 +1,6 @@
 "use client";
 
-import { loginUser } from "@/lib/api"
+import { loginUser,verifyToken } from "@/lib/api"
 import { useState } from "react";
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2";
@@ -20,32 +20,36 @@ export default function LoginRegisterForm() {
 
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        try {
-            const data = await loginUser({ username, password })
-            localStorage.setItem("token", data.access_token)
-            await Swal.fire({
-                title: 'LOgin successful',
-                text: 'You have successfully -> logged in',
-                icon: 'success',
-                confirnButtonText: 'ok',
-                cancelButtonColor: '#3b82f6'
-            })
-            console.log("Login successful ->", data)
-            router.push("/home")
-        } catch (error) {
-            await Swal.fire({
-                title: 'faild',
-                text: 'You have un successfully -> logged in',
-                icon: 'error',
-                confirnButtonText: 'ok',
+    e.preventDefault();
+    try {
+      const data = await loginUser({ username, password });
+      localStorage.setItem("token", data.access_token);
+      const result = await verifyToken(data.access_token);
 
-            })
-            console.log("Login failed -> ", error);
-
-        }
-    };
-
+      if (result && result.user_id) {
+        // 4. เก็บ user info
+        localStorage.setItem("userId", result.user_id);
+        localStorage.setItem("username", result.username);
+      } else {
+        throw new Error("Invalid token response");
+      }
+      await Swal.fire({
+        title: "Login Successful",
+        text: "Welcome back!",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#06b6d4",
+      });
+      router.push("/home");
+    } catch (error) {
+      await Swal.fire({
+        title: "Login Failed",
+        text: error.response?.data?.message || "Invalid credentials.",
+        icon: "error",
+        confirmButtonText: "Try Again",
+      });
+    }
+  };
 
     const handleRegister = () => {
         router.push("/register")
