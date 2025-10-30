@@ -15,7 +15,10 @@ export const registerUser = async (data) => {
 
 export const verifyToken = async (token) => {
   const response = await api.get("/auth/verify-token", {
-    headers: { Authorization: `Bearer ${token}`},
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
+    },
   });
   return response.data;
 };
@@ -27,6 +30,7 @@ export const getAllFriends = async () => {
   const response = await api.get("/chat/all", {
     headers: {
       Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
     },
   });
   return response.data;
@@ -38,8 +42,9 @@ export const addFriends = async (other_user_id) => {
   const response = await api.post("/chat/room", 
     {other_user_id},
     {
-    headers: {
+   headers: {
       Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
     },
   });
   return response.data;
@@ -51,6 +56,7 @@ export const getMyChatRooms = async () => {
   const response = await api.get("/chat/getrooms", {
     headers: {
       Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
     },
   });
   return response.data;
@@ -63,6 +69,7 @@ export const getMessages = async (roomId) => {
   const response = await api.get(`/chat/room/${roomIdInt}/messages`, {
     headers: {
       Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
     },
   });
   return response.data;
@@ -77,7 +84,10 @@ export const sendMessage = async (roomId, content) => {
   const response = await api.post(
     `/chat/room/${roomIdInt}/message`,
     { content },
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: {
+      Authorization: `Bearer ${token}`,
+      "ngrok-skip-browser-warning": "true",
+    }, }
   );
   return response.data; // {id, sender_id, content, created_at}
 };
